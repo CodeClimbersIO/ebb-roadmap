@@ -141,12 +141,9 @@ export default function HomePage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <h2 className="text-xl font-semibold text-foreground mb-4 md:mb-0">Product Tasks</h2>
 
-          {canEdit && (
+          {(currentUser && ['editor', 'admin'].includes(currentUser.role || '')) && (
             <button
-              onClick={() => {
-                setEditingNote(null); // Clear any editing state
-                setIsFormOpen(true);
-              }}
+              onClick={() => setIsFormOpen(true)}
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md transition-colors"
             >
               Add Note
@@ -158,7 +155,7 @@ export default function HomePage() {
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div>
             <label htmlFor="status-filter" className="block text-sm font-medium text-foreground mb-1">
-              Filter by status
+              Status
             </label>
             <select
               id="status-filter"
@@ -176,7 +173,7 @@ export default function HomePage() {
 
           <div>
             <label htmlFor="category-filter" className="block text-sm font-medium text-foreground mb-1">
-              Filter by category
+              Category
             </label>
             <select
               id="category-filter"
