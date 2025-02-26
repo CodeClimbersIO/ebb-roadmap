@@ -19,36 +19,41 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const { theme, toggleTheme } = useTheme();
 
+  useEffect(() => {
+    // Only fetch users if the current user is an admin
+    if (currentUser?.role === 'admin') {
+      async function fetchUsers() {
+        try {
+          const usersRef = collection(db, 'users');
+          const q = query(usersRef);
+          const querySnapshot = await getDocs(q);
+
+          const usersList: AppUser[] = [];
+          querySnapshot.forEach((doc) => {
+            usersList.push({
+              id: doc.id,
+              ...doc.data()
+            } as AppUser);
+          });
+
+          setUsers(usersList);
+        } catch (error) {
+          console.error('Error fetching users:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      fetchUsers();
+    } else {
+      setLoading(false);
+    }
+  }, [currentUser]);
+
   // Redirect if not admin
   if (!currentUser || currentUser.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
-
-  useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const usersRef = collection(db, 'users');
-        const q = query(usersRef);
-        const querySnapshot = await getDocs(q);
-
-        const usersList: AppUser[] = [];
-        querySnapshot.forEach((doc) => {
-          usersList.push({
-            id: doc.id,
-            ...doc.data()
-          } as AppUser);
-        });
-
-        setUsers(usersList);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        setLoading(false);
-      }
-    }
-
-    fetchUsers();
-  }, []);
 
   const updateUserRole = async (userId: string, newRole: string) => {
     try {
@@ -124,7 +129,7 @@ export default function AdminPage() {
                     <div className="flex-shrink-0 h-10 w-10">
                       <img
                         className="h-10 w-10 rounded-full"
-                        src={user.photoURL || 'https://via.placeholder.com/40'}
+                        src={user.photoURL || ''}
                         alt=""
                       />
                     </div>
@@ -140,10 +145,10 @@ export default function AdminPage() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'admin'
-                      ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
-                      : user.role === 'editor'
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                        : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
+                    ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+                    : user.role === 'editor'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                      : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
                     }`}>
                     {user.role}
                   </span>

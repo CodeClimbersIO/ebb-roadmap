@@ -51,11 +51,17 @@ export default function AssigneeSelector({
   if (!isAdmin || disabled) {
     return (
       <div className="flex items-center text-sm text-muted-foreground">
-        <img
-          src={(currentAssignee && currentAssignee.photoURL) || 'https://via.placeholder.com/24'}
-          alt={(currentAssignee && currentAssignee.displayName) || 'Unassigned'}
-          className="w-5 h-5 rounded-full mr-1"
-        />
+        {currentAssignee && currentAssignee.photoURL ? (
+          <img
+            src={currentAssignee.photoURL}
+            alt={currentAssignee.displayName || 'User'}
+            className="w-5 h-5 rounded-full mr-1"
+          />
+        ) : (
+          <div className="w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs mr-1">
+            {currentAssignee ? (currentAssignee.displayName?.charAt(0) || 'U').toUpperCase() : 'U'}
+          </div>
+        )}
         <span className="truncate max-w-[100px]">
           {currentAssignee ? currentAssignee.displayName || 'Unnamed User' : 'Unassigned'}
         </span>
@@ -72,11 +78,17 @@ export default function AssigneeSelector({
           className="flex items-center text-sm text-muted-foreground hover:text-foreground"
           disabled={loading}
         >
-          <img
-            src={(currentAssignee && currentAssignee.photoURL) || 'https://via.placeholder.com/24'}
-            alt={(currentAssignee && currentAssignee.displayName) || 'Unassigned'}
-            className="w-5 h-5 rounded-full mr-1"
-          />
+          {currentAssignee && currentAssignee.photoURL ? (
+            <img
+              src={currentAssignee.photoURL}
+              alt={currentAssignee.displayName || 'User'}
+              className="w-5 h-5 rounded-full mr-1"
+            />
+          ) : (
+            <div className="w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs mr-1">
+              {currentAssignee ? (currentAssignee.displayName?.charAt(0) || 'U').toUpperCase() : 'U'}
+            </div>
+          )}
           <span className="truncate max-w-[100px]">
             {currentAssignee ? currentAssignee.displayName || 'Unnamed User' : 'Unassigned'}
           </span>

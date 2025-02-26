@@ -9,7 +9,8 @@ import {
   Timestamp,
   onSnapshot,
   where,
-  getDocs
+  getDocs,
+  serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Note, Comment, NoteStatus } from '../types/Note';
@@ -20,28 +21,25 @@ const notesCollection = collection(db, 'notes');
 const commentsCollection = collection(db, 'comments');
 
 // Create a new note
-export async function createNote(data: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>, user: User) {
-  // Default to assigning to the creator
-  const assignedTo = data.assignedTo || {
-    uid: user.uid,
-    displayName: user.displayName,
-    photoURL: user.photoURL
-  };
-  
-  const noteData = {
+export const createNote = async (
+  data: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>, 
+  currentUser: User
+): Promise<string> => {
+  // Create the note document
+  const docRef = await addDoc(collection(db, 'notes'), {
     ...data,
-    assignedTo,
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
     createdBy: {
-      uid: user.uid,
-      displayName: user.displayName,
-      photoURL: user.photoURL
+      uid: currentUser.uid,
+      displayName: currentUser.displayName || 'Anonymous',
+      photoURL: currentUser.photoURL || null
     }
-  };
+  });
   
-  return await addDoc(notesCollection, noteData);
-}
+  // Return the ID as a string
+  return docRef.id;
+};
 
 // Update an existing note
 export async function updateNote(id: string, data: Partial<Omit<Note, 'id' | 'createdAt' | 'createdBy'>>) {
@@ -138,13 +136,21 @@ export function subscribeToNoteComments(noteId: string, callback: (comments: Com
   });
 }
 
-// Get all admin users for assignment dropdown
+// Add type definition
+interface AdminUser {
+  uid: string;
+  displayName: string | null;
+  photoURL: string | null;
+  email: string | null;
+}
+
+// Update function with explicit type
 export async function getAdminUsers() {
   const usersRef = collection(db, 'users');
   const q = query(usersRef, where('role', '==', 'admin'));
   const querySnapshot = await getDocs(q);
   
-  const admins = [];
+  const admins: AdminUser[] = [];
   querySnapshot.forEach((doc) => {
     admins.push({
       uid: doc.id,

@@ -33,25 +33,29 @@ export default function HomePage() {
     return () => unsubscribe();
   }, []);
 
-  const handleCreateNote = async (data: Partial<Note>) => {
-    if (!currentUser) return;
+  const handleCreateNote = async (data: Partial<Note>): Promise<string> => {
+    if (!currentUser) throw new Error("User not authenticated");
 
     try {
-      await createNote(data as Omit<Note, 'id' | 'createdAt' | 'updatedAt'>, currentUser);
+      const noteId = await createNote(data as Omit<Note, 'id' | 'createdAt' | 'updatedAt'>, currentUser);
       setIsFormOpen(false);
+      return noteId;
     } catch (error) {
       console.error('Error creating note:', error);
+      throw error;
     }
   };
 
-  const handleUpdateNote = async (data: Partial<Note>) => {
-    if (!editingNote) return;
+  const handleUpdateNote = async (data: Partial<Note>): Promise<string> => {
+    if (!editingNote) throw new Error("No note selected for editing");
 
     try {
       await updateNote(editingNote.id, data);
       setEditingNote(null);
+      return editingNote.id;
     } catch (error) {
       console.error('Error updating note:', error);
+      throw error;
     }
   };
 
@@ -102,7 +106,6 @@ export default function HomePage() {
                       console.log('Image failed to load:', currentUser.photoURL);
                       // Replace with fallback on error
                       e.currentTarget.onerror = null;
-                      e.currentTarget.src = 'https://via.placeholder.com/32';
                     }}
                   />
                 ) : (

@@ -3,34 +3,74 @@ import { Note, NoteStatus } from '../../types/Note';
 import { useAuth } from '../../contexts/AuthContext';
 import CategoryTag from '../ui/CategoryTag';
 import AssigneeSelector, { UserInfo } from '../ui/AssigneeSelector';
+import { createComment } from '../../services/commentService';
 
 interface NoteFormProps {
   note?: Partial<Note>;
-  onSubmit: (data: Partial<Note>) => void;
+  onSubmit: (data: Partial<Note>) => Promise<string>;
   onCancel: () => void;
 }
 
 export default function NoteForm({ note, onSubmit, onCancel }: NoteFormProps) {
   const { currentUser } = useAuth();
   const [title, setTitle] = useState(note?.title || '');
-  const [content, setContent] = useState(note?.content || '');
+  const [comment, setComment] = useState('');
   const [status, setStatus] = useState<NoteStatus>(note?.status || 'backlog');
   const [categories, setCategories] = useState<string[]>(note?.category || []);
   const [newCategory, setNewCategory] = useState('');
   const [assignedTo, setAssignedTo] = useState<UserInfo | null>(note?.assignedTo || null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{ title?: string }>({});
 
   // Check if current user is admin
   const isAdmin = currentUser && currentUser.role === 'admin';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      title,
-      content,
-      status,
-      category: categories,
-      assignedTo
-    });
+
+    // Reset previous errors
+    setErrors({});
+
+    // Validate form
+    let hasErrors = false;
+    const newErrors: { title?: string } = {};
+
+    if (!title) {
+      newErrors.title = "Please provide a title";
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Create note without comment field
+      const noteData = {
+        title,
+        status,
+        category: categories,
+        assignedTo
+      };
+
+      // Create the note and get its ID
+      const noteId = await onSubmit(noteData);
+
+      // Then create first comment if provided and pin it
+      if (comment && comment.trim() !== '' && currentUser) {
+        await createComment(noteId, comment.trim(), currentUser, true);
+      }
+
+      onCancel();
+    } catch (error) {
+      console.error("Error creating note:", error);
+      setErrors({ title: "Failed to create note" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const addCategory = () => {
@@ -55,22 +95,24 @@ export default function NoteForm({ note, onSubmit, onCancel }: NoteFormProps) {
           id="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="block w-full p-2 rounded-md border-2 border-border bg-card text-foreground shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+          className={`block w-full p-2 rounded-md border-2 ${errors.title ? 'border-red-500' : 'border-border'} bg-card text-foreground shadow-sm focus:border-primary focus:ring-primary sm:text-sm`}
           required
         />
+        {errors.title && (
+          <p className="mt-1 text-sm text-red-500">{errors.title}</p>
+        )}
       </div>
 
       <div className="text-left">
-        <label htmlFor="content" className="block text-sm font-medium mb-1 text-left">
-          Content
+        <label htmlFor="comment" className="block text-sm font-medium mb-1 text-left">
+          Comment
         </label>
         <textarea
-          id="content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
+          id="comment"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
           rows={4}
           className="block w-full p-2 rounded-md border-2 border-border bg-card text-foreground shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-          required
         />
       </div>
 
@@ -143,9 +185,10 @@ export default function NoteForm({ note, onSubmit, onCancel }: NoteFormProps) {
         </button>
         <button
           type="submit"
-          className="inline-flex justify-center py-2 px-4 border-2 border-primary shadow-sm text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+          disabled={isSubmitting}
+          className="inline-flex justify-center py-2 px-4 border-2 border-primary shadow-sm text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-70"
         >
-          {note?.id ? 'Update' : 'Create'}
+          {isSubmitting ? 'Saving...' : (note?.id ? 'Update' : 'Create')}
         </button>
       </div>
     </form>

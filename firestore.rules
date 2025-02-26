@@ -1,20 +1,36 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Public read access but only authenticated users can write
+    // Base rule - authenticated users can read
+    match /{document=**} {
+      allow read: if request.auth != null;
+    }
+    
+    // Notes collection
     match /notes/{noteId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      // Allow authenticated users to read notes
+      allow read: if request.auth != null;
+      
+      // Allow admins and editors to create/update/delete notes
+      allow create, update, delete: if request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'editor');
+      
+      // Comments subcollection - temporarily more permissive for debugging
+      match /comments/{commentId} {
+        // Allow all authenticated users to read/write comments for debugging
+        allow read, write: if request.auth != null;
+      }
     }
     
-    match /comments/{commentId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-    
+    // Users collection
     match /users/{userId} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      // Users can read/write their own data
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Admins can read all user data
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
   }
 }
