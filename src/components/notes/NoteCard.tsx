@@ -96,11 +96,11 @@ export default function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
         >
           <MessageCircleIcon className="h-3.5 w-3.5 mr-1" />
           <span>Comments ({comments.length})</span>
-          {comments.length > 0 && (
+          {
             isCommentsCollapsed ?
               <ChevronDownIcon className="h-3.5 w-3.5 ml-1" /> :
               <ChevronUpIcon className="h-3.5 w-3.5 ml-1" />
-          )}
+          }
         </div>
 
         {comments.length > 0 && comments.some(c => c.isPinned) && (
@@ -126,7 +126,7 @@ export default function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
         )}
       </div>
 
-      {!isCommentsCollapsed && comments.length > 0 && (
+      {!isCommentsCollapsed && (
         <div className="border-t border-border">
           <div className="px-4 py-4">
             {comments.filter(c => !c.isPinned).length > 0 ? (
