@@ -103,7 +103,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center">
             <img src="/images/ebb-logo.png" alt="Ebb Logo" className="h-10" />
-            <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-gray-100">Product Board</span>
+            <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-gray-100">Ebb Progress</span>
           </div>
 
           <div className="flex items-center space-x-4">
