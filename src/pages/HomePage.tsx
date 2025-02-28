@@ -7,6 +7,9 @@ import NoteForm from '../components/notes/NoteForm';
 import { useTheme } from '../contexts/ThemeContext';
 import { SunIcon, MoonIcon } from 'lucide-react';
 import Modal from '../components/ui/Modal';
+import RecentUpdatesWidget from '../components/updates/RecentUpdatesWidget';
+import { updateLastVisitTime } from '../services/localStorageService';
+import ProfileImage from '../components/ui/ProfileImage';
 
 export default function HomePage() {
   const { currentUser, signOut } = useAuth();
@@ -23,6 +26,11 @@ export default function HomePage() {
 
   // Can edit if user is editor or admin
   const canEdit = currentUser && ['editor', 'admin'].includes(currentUser.role || '');
+
+  // Update last visit time when component mounts
+  useEffect(() => {
+    updateLastVisitTime();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = subscribeToNotes((newNotes) => {
@@ -69,7 +77,22 @@ export default function HomePage() {
     }
   };
 
-  const filteredNotes = notes
+  // Define the priority order for statuses
+  const statusPriority = {
+    'review': 1,
+    'in-progress': 2,
+    'backlog': 3,
+    'complete': 4
+  };
+
+  // Sort notes by status priority
+  const sortedNotes = [...notes].sort((a, b) => {
+    const priorityA = statusPriority[a.status as keyof typeof statusPriority] || 999;
+    const priorityB = statusPriority[b.status as keyof typeof statusPriority] || 999;
+    return priorityA - priorityB;
+  });
+
+  const filteredNotes = sortedNotes
     .filter(note => !filter || note.status === filter)
     .filter(note => !categoryFilter || note.category.includes(categoryFilter));
 
@@ -96,25 +119,10 @@ export default function HomePage() {
 
             {currentUser && (
               <div className="flex items-center space-x-2">
-                {/* Debug and fix the user icon display */}
-                {currentUser.photoURL ? (
-                  <img
-                    src={currentUser.photoURL}
-                    alt={currentUser.displayName || 'User'}
-                    className="w-8 h-8 rounded-full"
-                    onError={(e) => {
-                      console.log('Image failed to load:', currentUser.photoURL);
-                      // Replace with fallback on error
-                      e.currentTarget.onerror = null;
-                    }}
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center">
-                    {currentUser.displayName
-                      ? currentUser.displayName.charAt(0).toUpperCase()
-                      : 'U'}
-                  </div>
-                )}
+                <ProfileImage
+                  user={currentUser}
+                  size="md"
+                />
                 <span className="text-sm font-medium text-card-foreground">
                   {currentUser.displayName || 'User'}
                   {currentUser.role && (
@@ -141,20 +149,25 @@ export default function HomePage() {
 
       {/* Main content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <h2 className="text-xl font-semibold text-foreground mb-4 md:mb-0">Product Tasks</h2>
+        {/* Recent Updates Widget & Add Note button in the same row */}
+        <div className="flex flex-col md:flex-row items-start justify-between mb-6 gap-4">
+          <div className="flex-1 w-full">
+            <RecentUpdatesWidget />
+          </div>
 
           {(currentUser && ['editor', 'admin'].includes(currentUser.role || '')) && (
-            <button
-              onClick={() => setIsFormOpen(true)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md transition-colors"
-            >
-              Add Note
-            </button>
+            <div className="md:ml-4 self-start mt-0">
+              <button
+                onClick={() => setIsFormOpen(true)}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md transition-colors whitespace-nowrap"
+              >
+                Add Note
+              </button>
+            </div>
           )}
         </div>
 
-        {/* Fix filter section contrast for dark mode */}
+        {/* Filter section */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div>
             <label htmlFor="status-filter" className="block text-sm font-medium text-foreground mb-1">

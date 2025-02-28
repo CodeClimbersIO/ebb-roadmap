@@ -1,5 +1,5 @@
 import { db } from '../lib/firebase';
-import { collection, addDoc, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot, writeBatch, getDocs, getCountFromServer, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot, writeBatch, getDocs, getCountFromServer, serverTimestamp, where } from 'firebase/firestore';
 import { Comment } from '../types/Comment';
 import { User } from 'firebase/auth';
 
@@ -100,4 +100,68 @@ export const getCommentCount = async (noteId: string): Promise<number> => {
   const commentsRef = collection(db, 'notes', noteId, 'comments');
   const snapshot = await getCountFromServer(commentsRef);
   return snapshot.data().count;
+};
+
+// Get recent comments across all notes since a specified timestamp
+export const getRecentComments = (
+  afterTimestamp: Date,
+  limit: number = 10,
+  callback: (comments: (Comment & { noteTitle: string })[]) => void
+): () => void => {
+  // First, get all notes to access their comment subcollections
+  const notesQuery = query(collection(db, 'notes'));
+  
+  return onSnapshot(notesQuery, async (notesSnapshot) => {
+    const allComments: (Comment & { noteTitle: string })[] = [];
+    
+    // Process each note document
+    for (const noteDoc of notesSnapshot.docs) {
+      try {
+        const noteId = noteDoc.id;
+        const noteData = noteDoc.data();
+        const noteTitle = noteData.title || 'Untitled Note';
+        
+        // Get comments for this note
+        const commentsQuery = query(
+          collection(db, 'notes', noteId, 'comments'),
+          where('createdAt', '>', afterTimestamp),
+          orderBy('createdAt', 'desc')
+        );
+        
+        const commentsSnapshot = await getDocs(commentsQuery);
+        
+        // Process each comment for this note
+        commentsSnapshot.forEach(commentDoc => {
+          try {
+            const commentData = commentDoc.data();
+            
+            // Make sure createdAt and updatedAt are valid dates
+            const createdAt = commentData.createdAt?.toDate() || new Date();
+            const updatedAt = commentData.updatedAt?.toDate() || createdAt;
+            
+            allComments.push({
+              id: commentDoc.id,
+              ...commentData,
+              noteId,
+              noteTitle,
+              createdAt,
+              updatedAt,
+            } as Comment & { noteTitle: string });
+          } catch (error) {
+            console.error('Error processing comment data:', error);
+          }
+        });
+      } catch (error) {
+        console.error('Error processing note:', error);
+      }
+    }
+    
+    // Sort all comments by date (newest first) and limit
+    allComments.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const limitedComments = limit > 0 
+      ? allComments.slice(0, limit) 
+      : allComments;
+    
+    callback(limitedComments);
+  });
 }; 

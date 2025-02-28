@@ -7,7 +7,8 @@ import {
   onAuthStateChanged
 } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { ensureProfileImageStored } from '../services/profileService';
 
 // Define user roles
 export type UserRole = 'viewer' | 'editor' | 'admin';
@@ -41,7 +42,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function getUserRole(user: User): Promise<UserRole | undefined> {
     try {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
+
+      // Attempt to store the profile image in Firebase Storage if it's from Google
+      let storedPhotoURL = user.photoURL;
+      try {
+        storedPhotoURL = await ensureProfileImageStored(user);
+      } catch (error) {
+        console.error("Error ensuring profile image is stored:", error);
+        // Continue with original URL if there's an error
+      }
+
       if (userDoc.exists()) {
+        // Update the stored photoURL if it's changed and different from the existing one
+        if (storedPhotoURL &&
+          storedPhotoURL !== userDoc.data().photoURL &&
+          storedPhotoURL !== user.photoURL) {
+          await updateDoc(doc(db, 'users', user.uid), {
+            photoURL: storedPhotoURL
+          });
+        }
         return userDoc.data().role as UserRole;
       }
 
@@ -49,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await setDoc(doc(db, 'users', user.uid), {
         email: user.email,
         displayName: user.displayName,
-        photoURL: user.photoURL,
+        photoURL: storedPhotoURL, // Use the stored image URL or the original URL
         role: 'viewer', // Default role for new users
         createdAt: new Date()
       });

@@ -4,9 +4,11 @@ import { collection, query, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Navigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
+import ProfileImage from '../components/ui/ProfileImage';
 
 interface AppUser {
   id: string;
+  uid: string;
   email: string;
   displayName: string | null;
   photoURL: string | null;
@@ -32,6 +34,7 @@ export default function AdminPage() {
           querySnapshot.forEach((doc) => {
             usersList.push({
               id: doc.id,
+              uid: doc.id,
               ...doc.data()
             } as AppUser);
           });
@@ -127,10 +130,9 @@ export default function AdminPage() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10">
-                      <img
-                        className="h-10 w-10 rounded-full"
-                        src={user.photoURL || ''}
-                        alt=""
+                      <ProfileImage
+                        user={user}
+                        size="lg"
                       />
                     </div>
                     <div className="ml-4">
