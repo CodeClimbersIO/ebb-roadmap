@@ -75,11 +75,11 @@ export default function CommentItem({
     <div className={`mb-3 p-3 rounded-md ${comment.isPinned ? 'bg-primary/5 border border-primary/20' : 'bg-card hover:bg-muted'}`}>
       <div className="flex justify-between items-start">
         <div className="flex items-center">
-          <div className="font-medium text-sm">
+          <div className="font-medium text-sm text-gray-900 dark:text-gray-100">
             {comment.createdBy.displayName || 'Anonymous'}
           </div>
-          <span className="mx-1 text-xs text-muted-foreground">•</span>
-          <div className="text-xs text-muted-foreground">
+          <span className="mx-1 text-xs text-gray-600 dark:text-gray-400">•</span>
+          <div className="text-xs text-gray-700 dark:text-gray-300">
             {formatTimeAgo(comment.createdAt)}
           </div>
         </div>
@@ -88,7 +88,7 @@ export default function CommentItem({
           {isPinnable && (
             <button
               onClick={handlePin}
-              className={`p-1 rounded-full ${comment.isPinned ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
+              className={`p-1 rounded-full ${comment.isPinned ? 'text-primary bg-primary/10' : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-muted'}`}
               title={comment.isPinned ? 'Unpin comment' : 'Pin comment'}
             >
               <PinIcon className="h-3.5 w-3.5" />
@@ -99,7 +99,7 @@ export default function CommentItem({
             <>
               <button
                 onClick={() => setIsEditing(true)}
-                className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
+                className="p-1 rounded-full text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-muted"
                 title="Edit comment"
                 disabled={isEditing}
               >
@@ -108,7 +108,7 @@ export default function CommentItem({
 
               <button
                 onClick={handleDelete}
-                className="p-1 rounded-full text-muted-foreground hover:text-destructive hover:bg-muted"
+                className="p-1 rounded-full text-gray-700 dark:text-gray-300 hover:text-destructive hover:bg-muted"
                 title="Delete comment"
               >
                 <TrashIcon className="h-3.5 w-3.5" />
@@ -124,7 +124,7 @@ export default function CommentItem({
             <textarea
               value={editedContent}
               onChange={(e) => setEditedContent(e.target.value)}
-              className="w-full p-2 text-sm border rounded-md bg-card"
+              className="w-full p-2 text-sm border rounded-md bg-card text-gray-900 dark:text-gray-100"
               rows={2}
             />
             <div className="flex justify-end space-x-2 mt-2">
@@ -144,7 +144,7 @@ export default function CommentItem({
             </div>
           </div>
         ) : (
-          <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+          <p className="text-sm whitespace-pre-wrap text-gray-900 dark:text-gray-100">{comment.content}</p>
         )}
       </div>
     </div>

@@ -14,8 +14,9 @@ export default function LoginPage() {
       setLoading(true);
       await signInWithGoogle();
       navigate('/');
-    } catch (error: any) {
-      setError('Failed to sign in with Google: ' + (error.message || 'Unknown error'));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setError('Failed to sign in with Google: ' + errorMessage);
     } finally {
       setLoading(false);
     }
@@ -25,8 +26,9 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Ebb Product Board</h1>
-          <h2 className="mt-6 text-xl">Sign in to edit the board</h2>
+          <img src="/images/ebb-logo.png" alt="Ebb Logo" className="h-16 w-16 mx-auto mb-2" />
+          <h1 className="text-3xl font-bold text-gray-900">Ebb Roadmap</h1>
+          <h2 className="mt-6 text-xl text-gray-800">Sign in to edit the board</h2>
         </div>
 
         {error && (
@@ -54,7 +56,7 @@ export default function LoginPage() {
         </div>
 
         <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-800">
             Don't have edit access? Sign in first, then contact an administrator to upgrade your permissions.
           </p>
         </div>

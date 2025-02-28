@@ -35,7 +35,7 @@ export default function CommentForm({
         onChange={(e) => setContent(e.target.value)}
         placeholder={placeholder}
         rows={2}
-        className="w-full p-2 rounded-md border-2 border-border bg-card text-foreground text-sm"
+        className="w-full p-2 rounded-md border-2 border-border bg-card text-gray-900 dark:text-gray-100 text-sm placeholder:text-gray-500 dark:placeholder:text-gray-400"
         disabled={isSubmitting}
       />
       <div className="flex justify-end mt-2">

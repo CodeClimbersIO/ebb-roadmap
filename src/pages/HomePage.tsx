@@ -101,13 +101,16 @@ export default function HomePage() {
       {/* Header with fixed user icon */}
       <header className="bg-card shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-card-foreground">Ebb Product Board</h1>
+          <div className="flex items-center">
+            <img src="/images/ebb-logo.png" alt="Ebb Logo" className="h-10" />
+            <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-gray-100">Product Board</span>
+          </div>
 
           <div className="flex items-center space-x-4">
             {/* Theme toggle button */}
             <button
               onClick={toggleTheme}
-              className="rounded-full p-2 text-muted-foreground hover:bg-muted"
+              className="rounded-full p-2 text-gray-700 dark:text-gray-300 hover:bg-muted"
               aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             >
               {theme === 'dark' ? (
@@ -123,15 +126,15 @@ export default function HomePage() {
                   user={currentUser}
                   size="md"
                 />
-                <span className="text-sm font-medium text-card-foreground">
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {currentUser.displayName || 'User'}
                   {currentUser.role && (
-                    <span className="ml-1 text-xs text-muted-foreground">({currentUser.role})</span>
+                    <span className="ml-1 text-xs text-gray-700 dark:text-gray-300">({currentUser.role})</span>
                   )}
                 </span>
                 <button
                   onClick={() => signOut()}
-                  className="text-sm text-muted-foreground hover:text-card-foreground"
+                  className="text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                 >
                   Sign out
                 </button>
@@ -170,14 +173,14 @@ export default function HomePage() {
         {/* Filter section */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div>
-            <label htmlFor="status-filter" className="block text-sm font-medium text-foreground mb-1">
+            <label htmlFor="status-filter" className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
               Status
             </label>
             <select
               id="status-filter"
               value={filter || ''}
               onChange={(e) => setFilter(e.target.value as NoteStatus | '')}
-              className="w-full md:w-auto px-3 py-2 bg-background border border-border rounded-md shadow-sm text-foreground focus:outline-none focus:ring-primary focus:border-primary"
+              className="w-full md:w-auto px-3 py-2 bg-background border border-border rounded-md shadow-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary focus:border-primary"
             >
               <option value="">All Statuses</option>
               <option value="backlog">Backlog</option>
@@ -188,14 +191,14 @@ export default function HomePage() {
           </div>
 
           <div>
-            <label htmlFor="category-filter" className="block text-sm font-medium text-foreground mb-1">
+            <label htmlFor="category-filter" className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
               Category
             </label>
             <select
               id="category-filter"
               value={categoryFilter || ''}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full md:w-auto px-3 py-2 bg-background border border-border rounded-md shadow-sm text-foreground focus:outline-none focus:ring-primary focus:border-primary"
+              className="w-full md:w-auto px-3 py-2 bg-background border border-border rounded-md shadow-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary focus:border-primary"
             >
               <option value="">All Categories</option>
               {allCategories.map((category, index) => (
@@ -239,11 +242,11 @@ export default function HomePage() {
         {/* Notes grid */}
         {loading ? (
           <div className="flex justify-center py-12">
-            <p>Loading notes...</p>
+            <p className="text-gray-900 dark:text-gray-100">Loading notes...</p>
           </div>
         ) : filteredNotes.length === 0 ? (
           <div className="bg-card rounded-lg shadow-sm p-6 text-center">
-            <p className="text-muted-foreground">No notes found. {canEdit && 'Create your first note!'}</p>
+            <p className="text-gray-700 dark:text-gray-300">No notes found. {canEdit && 'Create your first note!'}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

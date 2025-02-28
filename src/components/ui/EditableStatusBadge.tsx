@@ -68,7 +68,7 @@ export default function EditableStatusBadge({
               <button
                 key={statusOption}
                 className={`${statusOption === status ? 'bg-muted' : ''
-                  } flex items-center px-4 py-2 text-sm text-foreground hover:bg-muted w-full text-left`}
+                  } flex items-center px-4 py-2 text-sm text-gray-900 dark:text-gray-100 hover:bg-muted w-full text-left`}
                 onClick={() => handleStatusChange(statusOption)}
               >
                 <span

@@ -79,7 +79,7 @@ export default function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
     <div className="bg-card border-2 border-border rounded-lg shadow-xl hover:shadow-2xl transition-shadow duration-200 overflow-hidden flex flex-col">
       <div className="p-4 flex-grow">
         <div className="flex justify-between items-start">
-          <h3 className="font-medium text-lg text-card-foreground truncate mr-2">{note.title}</h3>
+          <h3 className="font-medium text-lg text-gray-900 dark:text-gray-100 truncate mr-2">{note.title}</h3>
           {canEdit ? (
             <EditableStatusBadge
               status={note.status}
@@ -91,7 +91,7 @@ export default function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
         </div>
 
         <div
-          className="mt-4 flex items-center text-xs text-muted-foreground cursor-pointer hover:text-foreground"
+          className="mt-4 flex items-center text-xs text-gray-700 dark:text-gray-300 cursor-pointer hover:text-gray-900 dark:hover:text-white"
           onClick={() => setIsCommentsCollapsed(!isCommentsCollapsed)}
         >
           <MessageCircleIcon className="h-3.5 w-3.5 mr-1" />
@@ -142,7 +142,7 @@ export default function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
                 ))}
               </div>
             ) : (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-gray-700 dark:text-gray-300">
                 No additional comments
               </div>
             )}
